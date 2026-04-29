@@ -293,45 +293,96 @@
     }
     
     // Шаринг
-    function shareFilm() {
-        if (!app.currentFilm) return;
-        
-        const film = app.currentFilm;
-        
-        const shareText = 
-            '🎬 ' + (film.title || 'Мой фильм') + '\n\n' +
-            (film.annotation || '') + '\n\n' +
-            '🎵 Саундтрек: ' + (film.soundtrack || '') + '\n' +
-            '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
-            'Сними свой фильм: t.me/' + Config.BOT_USERNAME;
-        
-        // Пробуем открыть нативный шаринг Telegram
-        if (app.webApp && app.webApp.openTelegramLink) {
-            try {
-                const shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(shareText);
-                app.webApp.openTelegramLink(shareUrl);
-                return;
-            } catch(e) {
-                console.warn('Не удалось открыть шаринг:', e);
-            }
-        }
-        
-        // Fallback: копируем в буфер
-        const copied = Utils.copyToClipboard(shareText);
-        
-        if (copied) {
-            Utils.showPopup('✅ Скопировано! Отправьте в любой чат');
-        } else {
-            // Последний fallback: показываем текст
-            if (app.webApp && app.webApp.showPopup) {
-                app.webApp.showPopup({
-                    title: '📤 Поделиться',
-                    message: shareText.substring(0, 200) + '...\n\nТекст скопирован в буфер',
-                    buttons: [{type: 'ok'}]
-                });
-            }
+function shareFilm() {
+    if (!app.currentFilm) return;
+    
+    const film = app.currentFilm;
+    
+    const shareText = 
+        '🎬 ' + (film.title || 'Мой фильм') + '\n\n' +
+        (film.annotation || '') + '\n\n' +
+        '🎵 Саундтрек: ' + (film.soundtrack || '') + '\n' +
+        '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
+        'Сними свой фильм: t.me/' + Config.BOT_USERNAME;
+    
+    // Показываем кнопки шаринга
+    showShareButtons(shareText);
+}
+
+// Показ кнопок шаринга
+function showShareButtons(shareText) {
+    // Скрываем обычные кнопки
+    document.getElementById('share-btn').classList.add('hidden');
+    document.getElementById('back-btn').classList.add('hidden');
+    
+    // Показываем блок с кнопками шаринга
+    const shareBlock = document.getElementById('share-buttons-block');
+    if (shareBlock) {
+        shareBlock.classList.remove('hidden');
+    }
+    
+    // Сохраняем текст для шаринга
+    app._shareText = shareText;
+}
+
+// Скрытие кнопок шаринга
+function hideShareButtons() {
+    document.getElementById('share-btn').classList.remove('hidden');
+    document.getElementById('back-btn').classList.remove('hidden');
+    
+    const shareBlock = document.getElementById('share-buttons-block');
+    if (shareBlock) {
+        shareBlock.classList.add('hidden');
+    }
+}
+
+// Отправка в Telegram
+function shareToTelegram() {
+    if (!app._shareText) return;
+    
+    // Декодируем URL
+    var shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(app._shareText);
+    
+    // Пробуем открыть через Telegram API
+    if (app.webApp && typeof app.webApp.openTelegramLink === 'function') {
+        try {
+            app.webApp.openTelegramLink(shareUrl);
+            return;
+        } catch(e) {
+            console.log('openTelegramLink failed, trying fallback');
         }
     }
+    
+    // Fallback: открываем в новом окне
+    window.open(shareUrl, '_blank');
+}
+
+// Копирование в буфер
+function copyToClipboard() {
+    if (!app._shareText) return;
+    
+    const copied = Utils.copyToClipboard(app._shareText);
+    
+    if (copied) {
+        Utils.showPopup('✅ Текст скопирован! Отправьте в любой чат');
+    } else {
+        Utils.showPopup('📋 Не удалось скопировать. Попробуйте ещё раз.');
+    }
+}
+
+// Подписка на канал
+function subscribeToChannel() {
+    var channelUrl = 'https://t.me/FairChoiceLab';
+    
+    if (app.webApp && typeof app.webApp.openTelegramLink === 'function') {
+        try {
+            app.webApp.openTelegramLink(channelUrl);
+            return;
+        } catch(e) {}
+    }
+    
+    window.open(channelUrl, '_blank');
+}
     
     // Возврат на главный экран
     function goBack() {
