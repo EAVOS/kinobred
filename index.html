@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎬 КиноБред</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Главный экран -->
+        <div id="home-screen" class="screen">
+            <div class="container">
+                <div class="logo-section">
+                    <div class="logo-icon">🎬</div>
+                    <h1>КиноБред</h1>
+                    <p class="subtitle">Твоя жизнь — готовый сценарий</p>
+                </div>
+
+                <div class="input-section">
+                    <label class="input-label">Опиши любую ситуацию из жизни:</label>
+                    <textarea 
+                        id="story-input" 
+                        class="story-textarea" 
+                        placeholder="Например: «Я стоял в очереди на почте 40 минут, чтобы отправить посылку, а когда подошёл — забыл паспорт дома»"
+                        maxlength="300"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="char-count">0</span>/300
+                    </div>
+                </div>
+
+                <div class="genre-section">
+                    <label class="input-label">Выбери жанр:</label>
+                    <div class="genre-buttons">
+                        <button class="genre-btn selected" data-genre="timeloop">
+                            <span class="genre-emoji">🌀</span>
+                            <span class="genre-name">Временная петля</span>
+                        </button>
+                        <button class="genre-btn" data-genre="absurd">
+                            <span class="genre-emoji">🤪</span>
+                            <span class="genre-name">Абсурдная комедия</span>
+                        </button>
+                        <button class="genre-btn" data-genre="noir">
+                            <span class="genre-emoji">🎭</span>
+                            <span class="genre-name">Мрачный реализм</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="create-btn" class="btn btn-primary" disabled>
+                    🎬 Снять фильм
+                </button>
+
+                <div id="error-msg" class="error-message"></div>
+
+                <div id="stats-section" class="stats">
+                    📊 Загрузка статистики...
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран загрузки -->
+        <div id="loader-screen" class="screen hidden">
+            <div class="loader-container">
+                <div class="loader-icon">🎥</div>
+                <div class="loader-spinner"></div>
+                <p class="loader-text" id="loader-text">Ищем локацию...</p>
+                <p class="loader-subtext" id="loader-timer">Обычно это занимает 5-10 секунд</p>
+            </div>
+        </div>
+
+        <!-- Экран результата -->
+        <div id="result-screen" class="screen hidden">
+            <div class="container">
+                <div class="film-card">
+                    <div class="film-genre-badge" id="film-genre"></div>
+                    <h2 class="film-title" id="film-title"></h2>
+                    <div class="film-annotation" id="film-annotation"></div>
+                    <div class="film-details">
+                        <div class="film-meta">
+                            <span class="meta-icon">🎵</span>
+                            <span id="film-soundtrack"></span>
+                        </div>
+                        <div class="film-meta">
+                            <span class="meta-icon">⭐️</span>
+                            <span id="film-slogan"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="share-btn" class="btn btn-share">
+                        📤 Поделиться
+                    </button>
+                    <button id="back-btn" class="btn btn-secondary">
+                        🎬 Снять ещё
+                    </button>
+                </div>
+
+                <div id="share-popup" class="share-popup hidden">
+                    ✅ Скопировано в буфер обмена!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипты в порядке загрузки -->
+    <script src="js/config.js?v=1"></script>
+    <script src="js/utils.js?v=1"></script>
+    <script src="js/app.js?v=1"></script>
+</body>
+</html>
