@@ -296,30 +296,47 @@
 function shareFilm() {
     if (!app.currentFilm) return;
     
-    const film = app.currentFilm;
+    var film = app.currentFilm;
+    var webApp = window.Telegram && window.Telegram.WebApp;
     
-    const shareText = 
-        '🎬 ' + (film.title || 'Мой фильм') + '\n\n' +
+    var shareText = '🎬 ' + (film.title || 'Мой фильм') + '\n\n' +
         (film.annotation || '') + '\n\n' +
         '🎵 Саундтрек: ' + (film.soundtrack || '') + '\n' +
         '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
-        'Сними свой фильм: t.me/' + Config.BOT_USERNAME;
+        'Сними свой фильм: https://t.me/' + Config.BOT_USERNAME;
     
-    app._shareText = shareText;
+    // Способ 1: Прямая ссылка шаринга (самый надёжный)
+    var shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(shareText);
     
-    // Сразу пытаемся открыть шаринг
-    if (app.webApp && app.webApp.openTelegramLink) {
+    if (webApp && webApp.openTelegramLink) {
         try {
-            app.webApp.openTelegramLink('https://t.me/share/url?text=' + encodeURIComponent(shareText));
+            webApp.openTelegramLink(shareUrl);
             return;
         } catch(e) {
-            console.log('Share failed, showing fallback');
+            console.log('openTelegramLink failed:', e);
         }
     }
     
-    // Если не получилось — показываем кнопки
-    showShareButtons(shareText);
+    // Способ 2: Запасной — копирование в буфер
+    try {
+        navigator.clipboard.writeText(shareText).then(function() {
+            if (webApp && webApp.showPopup) {
+                webApp.showPopup({
+                    title: '📋 Скопировано!',
+                    message: 'Текст скопирован. Вставьте его в любой чат.',
+                    buttons: [{type: 'ok'}]
+                });
+            } else {
+                Utils.showPopup('✅ Текст скопирован! Отправьте в любой чат');
+            }
+        });
+    } catch(e) {
+        Utils.copyToClipboard(shareText);
+        Utils.showPopup('✅ Текст скопирован! Отправьте в любой чат');
+    }
 }
+
+    
 // Показ кнопок шаринга
 function showShareButtons(shareText) {
     // Скрываем обычные кнопки
