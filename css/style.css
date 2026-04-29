@@ -20,6 +20,13 @@
     --radius-sm: 12px;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    height: 100%;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
@@ -27,12 +34,17 @@ body {
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Фикс моргающей панели */
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 #app {
     max-width: 420px;
     margin: 0 auto;
     min-height: 100vh;
+    /* Фикс моргающей панели */
+    padding-bottom: 20px;
 }
 
 .screen {
@@ -110,10 +122,10 @@ h1 {
     resize: vertical;
     transition: border-color 0.2s;
     -webkit-appearance: none;
+    outline: none;
 }
 
 .story-textarea:focus {
-    outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
@@ -155,6 +167,7 @@ h1 {
     align-items: center;
     gap: 10px;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .genre-btn:active {
@@ -186,6 +199,7 @@ h1 {
     cursor: pointer;
     transition: all 0.2s;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .btn:active {
@@ -407,6 +421,17 @@ h1 {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+}
+
+/* Фикс для Telegram WebApp */
+#app {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+/* Скрываем скроллбар если появляется */
+::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
 }
 
 /* Адаптация под разные темы Telegram */
