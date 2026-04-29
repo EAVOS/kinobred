@@ -15,6 +15,11 @@ window.KinoBredUtils = {
                 // Отключаем вертикальные свайпы
                 if (webApp.disableVerticalSwipes) webApp.disableVerticalSwipes();
                 
+                // Скрываем MainButton если есть
+                if (webApp.MainButton) {
+                    webApp.MainButton.hide();
+                }
+                
                 // Устанавливаем цвет верхней панели
                 if (webApp.setHeaderColor) webApp.setHeaderColor('#0a0a1a');
                 if (webApp.setBackgroundColor) webApp.setBackgroundColor('#0a0a1a');
@@ -33,8 +38,14 @@ window.KinoBredUtils = {
         
         // Пробуем получить из Telegram
         if (webApp?.initDataUnsafe?.user?.id) {
-            return webApp.initDataUnsafe.user.id.toString();
+            return 'tg_' + webApp.initDataUnsafe.user.id;
         }
+        
+        // Пробуем из sessionStorage (работает в десктопе лучше)
+        try {
+            let userId = sessionStorage.getItem('kb_user_id');
+            if (userId) return userId;
+        } catch(e) {}
         
         // Пробуем из localStorage
         try {
@@ -44,9 +55,10 @@ window.KinoBredUtils = {
         
         // Генерируем анонимный ID
         const anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        try {
-            localStorage.setItem('kb_user_id', anonId);
-        } catch(e) {}
+        
+        // Сохраняем везде где можно
+        try { sessionStorage.setItem('kb_user_id', anonId); } catch(e) {}
+        try { localStorage.setItem('kb_user_id', anonId); } catch(e) {}
         
         return anonId;
     },
@@ -61,6 +73,13 @@ window.KinoBredUtils = {
         if (targetScreen) {
             targetScreen.classList.remove('hidden');
         }
+        
+        // Скрываем MainButton при смене экрана
+        try {
+            if (window.Telegram?.WebApp?.MainButton) {
+                window.Telegram.WebApp.MainButton.hide();
+            }
+        } catch(e) {}
     },
     
     // Показ ошибки
@@ -91,6 +110,16 @@ window.KinoBredUtils = {
     
     // Копирование в буфер обмена
     copyToClipboard: function(text) {
+        // Современный метод
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+                return true;
+            }).catch(function() {
+                return false;
+            });
+        }
+        
+        // Fallback для старых браузеров
         const textarea = document.createElement('textarea');
         textarea.value = text;
         textarea.style.position = 'fixed';
@@ -108,5 +137,27 @@ window.KinoBredUtils = {
         } finally {
             document.body.removeChild(textarea);
         }
+    },
+    
+    // Форматирование сообщения об ошибке от API
+    formatAPIError: function(error) {
+        if (!error) return 'Неизвестная ошибка';
+        
+        // Маппинг известных ошибок
+        const errorMap = {
+            'Слишком короткая история': 'Опишите ситуацию подробнее (минимум 10 символов)',
+            'Неизвестный жанр': 'Выберите один из предложенных жанров',
+            'Режиссёр ушёл в запой': 'Нейросеть временно недоступна. Попробуйте другой жанр или повторите позже.',
+            'Киностудия перегружена': 'Слишком много запросов. Подождите минуту и попробуйте снова.',
+            'Достигнут общий лимит': 'Достигнут дневной лимит фильмов. Приходите завтра!'
+        };
+        
+        for (var key in errorMap) {
+            if (error.indexOf(key) !== -1) {
+                return errorMap[key];
+            }
+        }
+        
+        return error;
     }
 };
