@@ -113,7 +113,31 @@
             }
         });
     }
+    function publishToChannel() {
+    if (!app.currentFilm) return;
     
+    var callbackName = 'kb_publish_' + Date.now();
+    
+    window[callbackName] = function(data) {
+        if (data && data.published) {
+            Utils.showPopup('✅ Опубликовано в «Сценарный цех»!');
+        } else {
+            Utils.showPopup('❌ Не удалось опубликовать');
+        }
+        delete window[callbackName];
+    };
+    
+    var params = new URLSearchParams({
+        action: 'publish',
+        story: app.currentFilm.annotation ? app.currentFilm.annotation.substring(0, 100) : '',
+        genre: app.selectedGenre,
+        callback: callbackName
+    });
+    
+    var script = document.createElement('script');
+    script.src = Config.GAS_URL + '?' + params.toString();
+    document.head.appendChild(script);
+}
     // Загрузка статистики
     function loadStats() {
         const callbackName = 'kb_stats_' + Date.now();
