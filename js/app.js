@@ -206,65 +206,68 @@
     
     // Создание фильма
     function createFilm() {
-        const story = elements.storyInput.value.trim();
+    const story = elements.storyInput.value.trim();
+    
+    if (story.length < 10) {
+        Utils.showError('Минимум 10 символов для сценария');
+        return;
+    }
+    
+    if (app.isLoading) return;
+    
+    Utils.showScreen('loader-screen');
+    startLoading();
+    
+    const userId = Utils.getUserId();
+    
+    // Используем JSONP для обхода CORS
+    const callbackName = 'kb_film_' + Date.now();
+    
+    window[callbackName] = function(data) {
+        cancelLoading();
         
-        if (story.length < 10) {
-            Utils.showError('Минимум 10 символов для сценария');
+        if (data.error) {
+            Utils.showError(data.error);
+            Utils.showScreen('home-screen');
+            delete window[callbackName];
             return;
         }
         
-        if (app.isLoading) return;
-        
-        // Показываем загрузку
-        Utils.showScreen('loader-screen');
-        startLoading();
-        
-        const userId = Utils.getUserId();
-        
-        // Отправляем запрос
-        fetch(Config.GAS_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                story: story,
-                genre: app.selectedGenre,
-                userId: userId
-            })
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw new Error('HTTP ' + response.status);
-            }
-            return response.json();
-        })
-        .then(function(data) {
-            cancelLoading();
-            
-            if (data.error) {
-                Utils.showError(data.error);
-                Utils.showScreen('home-screen');
-                return;
-            }
-            
-            if (data.success) {
-                app.currentFilm = data;
-                renderFilm(data);
-                Utils.showScreen('result-screen');
-                loadStats(); // Обновляем статистику
-            } else {
-                Utils.showError('Не удалось создать фильм');
-                Utils.showScreen('home-screen');
-            }
-        })
-        .catch(function(error) {
-            cancelLoading();
-            console.error('Ошибка создания фильма:', error);
-            Utils.showError('Киностудия перегружена. Попробуйте позже.');
+        if (data.success) {
+            app.currentFilm = data;
+            renderFilm(data);
+            Utils.showScreen('result-screen');
+            loadStats();
+        } else {
+            Utils.showError('Не удалось создать фильм');
             Utils.showScreen('home-screen');
-        });
-    }
+        }
+        
+        delete window[callbackName];
+    };
+    
+    // Формируем URL для JSONP
+    const params = new URLSearchParams({
+        action: 'create',
+        story: story,
+        genre: app.selectedGenre,
+        userId: userId,
+        callback: callbackName
+    });
+    
+    const script = document.createElement('script');
+    script.src = Config.GAS_URL + '?' + params.toString();
+    script.onerror = function() {
+        cancelLoading();
+        Utils.showError('Киностудия перегружена. Попробуйте позже.');
+        delete window[callbackName];
+    };
+    document.head.appendChild(script);
+    
+    setTimeout(function() {
+        if (script.parentNode) script.parentNode.removeChild(script);
+    }, 15000);
+}
     
     // Отрисовка результата
     function renderFilm(film) {
