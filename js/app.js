@@ -26,6 +26,15 @@
         Utils.showScreen('home-screen');
         console.log('🎬 КиноБред v1.0 инициализирован');
     }
+
+    // Трекинг шаринга
+var trackScript = document.createElement('script');
+trackScript.src = Config.GAS_URL + '?action=share&callback=kb_share_' + Date.now();
+window['kb_share_' + Date.now()] = function() {};
+document.head.appendChild(trackScript);
+setTimeout(function() {
+    if (trackScript.parentNode) trackScript.parentNode.removeChild(trackScript);
+}, 3000);
     
     function cacheElements() {
         elements.storyInput = document.getElementById('story-input');
