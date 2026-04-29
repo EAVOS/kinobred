@@ -305,10 +305,21 @@ function shareFilm() {
         '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
         'Сними свой фильм: t.me/' + Config.BOT_USERNAME;
     
-    // Показываем кнопки шаринга
+    app._shareText = shareText;
+    
+    // Сразу пытаемся открыть шаринг
+    if (app.webApp && app.webApp.openTelegramLink) {
+        try {
+            app.webApp.openTelegramLink('https://t.me/share/url?text=' + encodeURIComponent(shareText));
+            return;
+        } catch(e) {
+            console.log('Share failed, showing fallback');
+        }
+    }
+    
+    // Если не получилось — показываем кнопки
     showShareButtons(shareText);
 }
-
 // Показ кнопок шаринга
 function showShareButtons(shareText) {
     // Скрываем обычные кнопки
@@ -340,21 +351,27 @@ function hideShareButtons() {
 function shareToTelegram() {
     if (!app._shareText) return;
     
-    // Декодируем URL
-    var shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(app._shareText);
-    
-    // Пробуем открыть через Telegram API
-    if (app.webApp && typeof app.webApp.openTelegramLink === 'function') {
+    // Пробуем через WebApp API
+    if (app.webApp && app.webApp.openTelegramLink) {
         try {
-            app.webApp.openTelegramLink(shareUrl);
+            // Правильный формат для шаринга
+            app.webApp.openTelegramLink('https://t.me/share/url?text=' + encodeURIComponent(app._shareText));
             return;
         } catch(e) {
-            console.log('openTelegramLink failed, trying fallback');
+            console.log('Method 1 failed:', e);
         }
     }
     
-    // Fallback: открываем в новом окне
-    window.open(shareUrl, '_blank');
+    // Fallback: пробуем через window.open
+    try {
+        window.open('https://t.me/share/url?text=' + encodeURIComponent(app._shareText), '_blank');
+        return;
+    } catch(e) {
+        console.log('Method 2 failed:', e);
+    }
+    
+    // Последний fallback: копируем
+    copyToClipboard();
 }
 
 // Копирование в буфер
