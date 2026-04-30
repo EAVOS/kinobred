@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🎬 КиноБред</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
     <div id="app">
@@ -24,7 +22,7 @@
                     <textarea 
                         id="story-input" 
                         class="story-textarea" 
-                        placeholder="Например: «Я стоял в очереди на почте 40 минут, чтобы отправить посылку, а когда подошёл — забыл паспорт дома»"
+                        placeholder="Например: «Я стоял в очереди на почте 40 минут...»"
                         maxlength="300"
                     ></textarea>
                     <div class="char-count">
@@ -68,7 +66,6 @@
                 <div class="loader-icon">🎥</div>
                 <div class="loader-spinner"></div>
                 <p class="loader-text" id="loader-text">Ищем локацию...</p>
-                <p class="loader-subtext" id="loader-timer">Обычно это занимает 5-10 секунд</p>
             </div>
         </div>
 
@@ -92,29 +89,22 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button id="share-btn" class="btn btn-share">
-                        📤 Поделиться
-                    </button>
-                    <button id="subscribe-btn" class="btn btn-secondary" style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700;">
-                        📢 Подписаться на «Сценарный цех»
-                    </button>
-                    <button id="back-btn" class="btn btn-secondary">
-                        🎬 Снять ещё
-                    </button>
+                    <button id="share-btn" class="btn btn-share">📤 Поделиться</button>
+                    <button id="subscribe-btn" class="btn btn-secondary" style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700;">📢 Подписаться на «Сценарный цех»</button>
+                    <button id="back-btn" class="btn btn-secondary">🎬 Снять ещё</button>
                 </div>
 
-                <div id="share-popup" class="share-popup hidden">
-                    ✅ Скопировано в буфер обмена!
-                </div>
+                <div id="share-popup" class="share-popup hidden">✅ Скопировано!</div>
             </div>
         </div>
     </div>
 
-    <!-- Скрипты в порядке загрузки -->
+    <!-- Telegram SDK — только ОДИН раз -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="js/config.js?v=4"></script>
-<script src="js/utils.js?v=4"></script>
-<script src="js/share.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+    <!-- Скрипты приложения -->
+    <script src="js/config.js?v=5"></script>
+    <script src="js/utils.js?v=5"></script>
+    <script src="js/share.js?v=5"></script>
+    <script src="js/app.js?v=5"></script>
 </body>
 </html>
