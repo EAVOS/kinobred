@@ -259,94 +259,9 @@
     
     function shareFilm() {
     if (!app.currentFilm) return;
-    
-    var film = app.currentFilm;
-    var webApp = window.Telegram && window.Telegram.WebApp;
-    
-    var shareText = '🎬 ' + (film.title || 'Мой фильм') + '\n\n' +
-        (film.annotation || '') + '\n\n' +
-        '🎵 Саундтрек: ' + (film.soundtrack || '') + '\n' +
-        '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
-        'Сними свой фильм: https://t.me/' + Config.BOT_USERNAME;
-    
-    app._shareText = shareText;
-    
-    // Всегда копируем в буфер (надёжнее всего)
-    copyToClipboardAndNotify(shareText);
-    
-    // Пробуем открыть шаринг (на мобильных сработает)
-    if (webApp && webApp.openTelegramLink) {
-        try {
-            var shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(shareText);
-            webApp.openTelegramLink(shareUrl);
-        } catch(e) {
-            console.log('openTelegramLink failed');
-        }
-    }
+    window.KinoBredShare.shareFilm(app.currentFilm, app.selectedGenre);
 }
 
-function copyToClipboardAndNotify(text) {
-    try {
-        navigator.clipboard.writeText(text).then(function() {
-            showCopyNotification();
-            trackShare();
-        }).catch(function() {
-            fallbackCopy(text);
-        });
-    } catch(e) {
-        fallbackCopy(text);
-    }
-}
-
-function fallbackCopy(text) {
-    var copied = Utils.copyToClipboard(text);
-    if (copied) {
-        showCopyNotification();
-        trackShare();
-    }
-}
-
-function showCopyNotification() {
-    var webApp = window.Telegram && window.Telegram.WebApp;
-    
-    if (webApp && webApp.showPopup) {
-        try {
-            webApp.showPopup({
-                title: '📋 Текст скопирован!',
-                message: 'Вставьте его в любой чат или канал.',
-                buttons: [{type: 'ok'}]
-            });
-        } catch(e) {
-            Utils.showPopup('✅ Текст скопирован!');
-        }
-    } else {
-        Utils.showPopup('✅ Текст скопирован!');
-    }
-}
-
-function trackShare() {
-    var callbackName = 'kb_share_' + Date.now();
-    
-    // Колбэк должен быть определён ДО создания script
-    window[callbackName] = function(data) {
-        console.log('Share tracked');
-        delete window[callbackName];
-    };
-    
-    var script = document.createElement('script');
-    script.src = Config.GAS_URL + '?action=share&callback=' + callbackName;
-    script.onerror = function() {
-        delete window[callbackName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-    };
-    document.head.appendChild(script);
-    
-    setTimeout(function() {
-        if (script.parentNode) script.parentNode.removeChild(script);
-        if (window[callbackName]) delete window[callbackName];
-    }, 5000);
-}
-    
     function goBack() {
         elements.storyInput.value = '';
         elements.charCount.textContent = '0';
