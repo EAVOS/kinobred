@@ -123,10 +123,13 @@
     }
     
     function cancelLoading() {
-        app.isLoading = false;
-        app.startTime = null;
-        if (app.loaderInterval) { clearInterval(app.loaderInterval); app.loaderInterval = null; }
+    app.isLoading = false;
+    app.startTime = null;
+    if (app.loaderInterval) {
+        clearInterval(app.loaderInterval);
+        app.loaderInterval = null;
     }
+}
     
     function createFilm() {
         var story = elements.storyInput.value.trim();
@@ -177,12 +180,21 @@
     }
     
     function goBack() {
-        if (elements.storyInput) elements.storyInput.value = '';
-        if (elements.charCount) elements.charCount.textContent = '0';
-        if (elements.createBtn) elements.createBtn.disabled = true;
-        app.currentFilm = null;
-        Utils.showScreen('home-screen');
-    }
+    // Сначала очищаем всё
+    cancelLoading();
+    
+    if (elements.storyInput) elements.storyInput.value = '';
+    if (elements.charCount) elements.charCount.textContent = '0';
+    if (elements.createBtn) elements.createBtn.disabled = true;
+    app.currentFilm = null;
+    app._shareText = null;
+    
+    // Очищаем текст загрузчика
+    if (elements.loaderText) elements.loaderText.textContent = 'Ищем локацию...';
+    
+    // Показываем домашний экран
+    Utils.showScreen('home-screen');
+}
     
     // Запуск — сразу, без ожидания DOMContentLoaded
     cacheElements();
