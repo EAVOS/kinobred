@@ -1,20 +1,17 @@
 window.KinoBredUtils = (function() {
     var _userId = null;
-    var _webApp = null;
     
     function getWebApp() {
-        if (_webApp) return _webApp;
-        
         try {
             if (window.Telegram && window.Telegram.WebApp) {
-                _webApp = window.Telegram.WebApp;
-                // Только ready(). expand() вызываем позже
-                _webApp.ready();
-                return _webApp;
+                var wa = window.Telegram.WebApp;
+                wa.ready();
+                wa.expand();
+                return wa;
             }
         } catch(e) {}
         
-        _webApp = {
+        return {
             initDataUnsafe: {},
             ready: function(){},
             expand: function(){},
@@ -22,7 +19,6 @@ window.KinoBredUtils = (function() {
             openLink: function(url){ window.open(url, '_blank'); },
             showPopup: function(opts){ alert(opts.message || ''); }
         };
-        return _webApp;
     }
     
     function getUserId() {
