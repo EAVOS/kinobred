@@ -1,112 +1,101 @@
-window.KinoBredUtils = {
+window.KinoBredUtils = (function() {
+    var _userId = null;
     
-    initWebApp: function() {
+    function getWebApp() {
         try {
             if (window.Telegram && window.Telegram.WebApp) {
-                var webApp = window.Telegram.WebApp;
-                
-                if (webApp.ready) webApp.ready();
-                if (webApp.expand) webApp.expand();
-                if (webApp.disableVerticalSwipes) webApp.disableVerticalSwipes();
-                
-                if (webApp.MainButton) {
-                    webApp.MainButton.hide();
-                }
-                
-                if (webApp.setHeaderColor) webApp.setHeaderColor('#0a0a1a');
-                if (webApp.setBackgroundColor) webApp.setBackgroundColor('#0a0a1a');
-                
-                return webApp;
+                var wa = window.Telegram.WebApp;
+                wa.ready();
+                wa.expand();
+                return wa;
             }
-        } catch(e) {
-            console.warn('Telegram WebApp not available:', e);
-        }
-        return null;
-    },
-    
-    getUserId: function() {
-        var webApp = window.KinoBredApp && window.KinoBredApp.webApp;
-        
-        if (webApp && webApp.initDataUnsafe && webApp.initDataUnsafe.user && webApp.initDataUnsafe.user.id) {
-            return 'tg_' + webApp.initDataUnsafe.user.id;
-        }
-        
-        try {
-            var uid = sessionStorage.getItem('kb_user_id');
-            if (uid) return uid;
         } catch(e) {}
         
-        try {
-            var uid = localStorage.getItem('kb_user_id');
-            if (uid) return uid;
-        } catch(e) {}
-        
-        var anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        
-        try { sessionStorage.setItem('kb_user_id', anonId); } catch(e) {}
-        try { localStorage.setItem('kb_user_id', anonId); } catch(e) {}
-        
-        return anonId;
-    },
+        return {
+            initDataUnsafe: {},
+            ready: function(){},
+            expand: function(){},
+            openTelegramLink: function(url){ window.open(url, '_blank'); },
+            openLink: function(url){ window.open(url, '_blank'); },
+            showPopup: function(opts){ alert(opts.message || ''); }
+        };
+    }
     
-    showScreen: function(screenId) {
-        document.querySelectorAll('.screen').forEach(function(screen) {
-            screen.classList.add('hidden');
+    function getUserId() {
+        if (_userId) return _userId;
+        
+        var webApp = getWebApp();
+        var uid = webApp.initDataUnsafe && webApp.initDataUnsafe.user && webApp.initDataUnsafe.user.id;
+        if (uid) {
+            _userId = String(uid);
+            return _userId;
+        }
+        
+        _userId = 'anon_' + Math.random().toString(36).substr(2, 9);
+        return _userId;
+    }
+    
+    function showScreen(id) {
+        ['home-screen', 'result-screen', 'loader'].forEach(function(s) {
+            var el = document.getElementById(s);
+            if (el) el.classList.add('hidden');
         });
-        
-        var targetScreen = document.getElementById(screenId);
-        if (targetScreen) {
-            targetScreen.classList.remove('hidden');
-        }
-        
-        try {
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.MainButton) {
-                window.Telegram.WebApp.MainButton.hide();
-            }
-        } catch(e) {}
-    },
+        var target = document.getElementById(id);
+        if (target) target.classList.remove('hidden');
+    }
     
-    showError: function(message) {
-        var errorEl = document.getElementById('error-msg');
-        if (errorEl) {
-            errorEl.textContent = message;
-            errorEl.classList.add('show');
-            
-            setTimeout(function() {
-                errorEl.classList.remove('show');
-            }, 4000);
-        }
-    },
-    
-    showPopup: function(message) {
-        var popup = document.getElementById('share-popup');
-        if (popup) {
-            popup.textContent = message;
-            popup.classList.remove('hidden');
-            
-            setTimeout(function() {
-                popup.classList.add('hidden');
-            }, 2000);
-        }
-    },
-    
-    copyToClipboard: function(text) {
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        textarea.style.top = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        
-        try {
-            document.execCommand('copy');
-            return true;
-        } catch(e) {
-            return false;
-        } finally {
-            document.body.removeChild(textarea);
+    function showError(msg) {
+        var el = document.getElementById('error-msg');
+        if (el) {
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(el._timeout);
+            el._timeout = setTimeout(function() { el.classList.remove('show'); }, 4000);
         }
     }
-};
+    
+    function showPopup(msg) {
+        var el = document.getElementById('share-popup');
+        if (el) {
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(function() { el.classList.add('hidden'); }, 2000);
+        }
+    }
+    
+    function copyToClipboard(text) {
+        try {
+            navigator.clipboard.writeText(text);
+            return true;
+        } catch(e) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                return true;
+            } catch(e2) {
+                document.body.removeChild(ta);
+                return false;
+            }
+        }
+    }
+    
+    function isMobile() {
+        return /Android|iPhone|iPad/i.test(navigator.userAgent);
+    }
+    
+    return {
+        getWebApp: getWebApp,
+        getUserId: getUserId,
+        showScreen: showScreen,
+        showError: showError,
+        showPopup: showPopup,
+        copyToClipboard: copyToClipboard,
+        isMobile: isMobile
+    };
+})();
