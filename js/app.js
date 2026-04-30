@@ -132,12 +132,30 @@
 }
     
     function createFilm() {
-        var story = elements.storyInput.value.trim();
-        if (story.length < 10) { Utils.showError('Минимум 10 символов'); return; }
-        if (app.isLoading) return;
-        
-        Utils.showScreen('loader-screen');
-        startLoading();
+    var story = elements.storyInput.value.trim();
+    
+    if (story.length < 10) {
+        Utils.showError('Минимум 10 символов для сценария');
+        return;
+    }
+    
+    if (app.isLoading) return;
+    
+    // Фронтенд-защита от промпт-инъекций
+    var suspicious = [
+        'забудь', 'игнорируй', 'системный', 'prompt',
+        'инструкции', 'отвечай как', 'ты теперь', 'твоя роль'
+    ];
+    
+    for (var i = 0; i < suspicious.length; i++) {
+        if (story.toLowerCase().indexOf(suspicious[i]) !== -1) {
+            Utils.showError('Опишите реальную ситуацию из жизни, а не инструкции для нейросети.');
+            return;
+        }
+    }
+    
+    Utils.showScreen('loader-screen');
+    startLoading();
         
         var userId = Utils.getUserId();
         var cb = 'kb_film_' + Date.now();
