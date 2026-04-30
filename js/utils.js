@@ -36,17 +36,29 @@ window.KinoBredUtils = (function() {
     }
     
     function showScreen(id) {
-    ['home-screen', 'result-screen', 'loader'].forEach(function(s) {
-        var el = document.getElementById(s);
-        if (el) el.classList.add('hidden');
-    });
-    var target = document.getElementById(id);
-    if (target) target.classList.remove('hidden');
+    // Полностью скрываем все экраны
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) {
+        screens[i].classList.add('hidden');
+        screens[i].style.display = 'none';
+    }
     
-    // Гарантированно скрываем лоадер
-    var loaderScreen = document.getElementById('loader-screen');
-    if (loaderScreen && id !== 'loader') {
-        loaderScreen.classList.add('hidden');
+    // Показываем нужный экран
+    var target = document.getElementById(id);
+    if (target) {
+        target.classList.remove('hidden');
+        target.style.display = 'block';
+    }
+    
+    // Принудительно прячем все элементы лоадера
+    var loaderTexts = document.querySelectorAll('.loader-text, .loader-icon, .loader-spinner');
+    for (var j = 0; j < loaderTexts.length; j++) {
+        loaderTexts[j].style.display = 'none';
+    }
+    if (id === 'loader-screen') {
+        for (var k = 0; k < loaderTexts.length; k++) {
+            loaderTexts[k].style.display = '';
+        }
     }
 }
     
