@@ -18,13 +18,17 @@
     var elements = {};
     
     function init() {
-        app.webApp = Utils.getWebApp();
-        cacheElements();
-        setupEventListeners();
-        loadStats();
-        Utils.showScreen('home-screen');
-        console.log('🎬 КиноБред v1.0');
-    }
+    app.webApp = Utils.getWebApp();
+    // expand вызываем ОДИН раз с задержкой
+    setTimeout(function() {
+        try { if (app.webApp.expand) app.webApp.expand(); } catch(e) {}
+    }, 100);
+    
+    cacheElements();
+    setupEventListeners();
+    loadStats();
+    Utils.showScreen('home-screen');
+}
     
     function cacheElements() {
         elements.storyInput = document.getElementById('story-input');
