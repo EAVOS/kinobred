@@ -68,6 +68,22 @@
         if (elements.backBtn) {
             elements.backBtn.addEventListener('click', goBack);
         }
+        // Находим кнопку подписки и вешаем на неё событие
+var subscribeBtn = document.getElementById('subscribe-btn');
+if (subscribeBtn) {
+    subscribeBtn.addEventListener('click', function() {
+        // Формируем ссылку на канал
+        var channelUrl = 'https://t.me/KinoBredLab';
+        
+        // Пробуем открыть ссылку через WebApp (для мобильных) или в новой вкладке (для ПК)
+        var webApp = window.KinoBredUtils.getWebApp();
+        if (webApp && webApp.openTelegramLink) {
+            webApp.openTelegramLink(channelUrl);
+        } else {
+            window.open(channelUrl, '_blank');
+        }
+    });
+}
     }
     
     function onStoryInput() {
