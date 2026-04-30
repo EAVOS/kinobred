@@ -180,24 +180,21 @@
     }
     
     function goBack() {
-    // Сначала очищаем всё
     cancelLoading();
     
-    // Очищаем поля
+    // Скрываем ВСЁ связанное с лоадером
+    var loaderElements = document.querySelectorAll('#loader-screen, .loader-text, .loader-icon, .loader-spinner, .loader-container');
+    for (var i = 0; i < loaderElements.length; i++) {
+        loaderElements[i].classList.add('hidden');
+        loaderElements[i].style.display = 'none';
+    }
+    
     if (elements.storyInput) elements.storyInput.value = '';
     if (elements.charCount) elements.charCount.textContent = '0';
     if (elements.createBtn) elements.createBtn.disabled = true;
     app.currentFilm = null;
     app._shareText = null;
     
-    // Принудительно скрываем лоадер
-    var loaderScreen = document.getElementById('loader-screen');
-    if (loaderScreen) loaderScreen.classList.add('hidden');
-    
-    // Очищаем текст загрузчика на всякий случай
-    if (elements.loaderText) elements.loaderText.textContent = 'Ищем локацию...';
-    
-    // Показываем домашний экран
     Utils.showScreen('home-screen');
 }
     
