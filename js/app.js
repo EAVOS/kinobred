@@ -4,8 +4,16 @@
     var Utils = window.KinoBredUtils;
     var Config = window.KinoBredConfig;
     
+    // Инициализация как в FairChoice — сразу
+    var webApp;
+    try {
+        webApp = Utils.getWebApp();  // ready() и expand() уже внутри
+    } catch(e) {
+        webApp = null;
+    }
+    
     var app = {
-        webApp: null,
+        webApp: webApp,
         selectedGenre: 'timeloop',
         currentFilm: null,
         isLoading: false,
@@ -16,19 +24,6 @@
     window.KinoBredApp = app;
     
     var elements = {};
-    
-    function init() {
-    app.webApp = Utils.getWebApp();
-    // expand вызываем ОДИН раз с задержкой
-    setTimeout(function() {
-        try { if (app.webApp.expand) app.webApp.expand(); } catch(e) {}
-    }, 100);
-    
-    cacheElements();
-    setupEventListeners();
-    loadStats();
-    Utils.showScreen('home-screen');
-}
     
     function cacheElements() {
         elements.storyInput = document.getElementById('story-input');
@@ -46,8 +41,6 @@
         elements.filmSlogan = document.getElementById('film-slogan');
         elements.shareBtn = document.getElementById('share-btn');
         elements.backBtn = document.getElementById('back-btn');
-        
-        console.log('Elements cached:', elements);
     }
     
     function setupEventListeners() {
@@ -55,13 +48,11 @@
             elements.storyInput.addEventListener('input', onStoryInput);
         }
         
-        if (elements.genreBtns) {
-            elements.genreBtns.forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    selectGenre(btn.dataset.genre);
-                });
+        elements.genreBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                selectGenre(btn.dataset.genre);
             });
-        }
+        });
         
         if (elements.createBtn) {
             elements.createBtn.addEventListener('click', createFilm);
@@ -72,26 +63,22 @@
         if (elements.backBtn) {
             elements.backBtn.addEventListener('click', goBack);
         }
-        // Находим кнопку подписки и вешаем на неё событие
-var subscribeBtn = document.getElementById('subscribe-btn');
-if (subscribeBtn) {
-    subscribeBtn.addEventListener('click', function() {
-        // Формируем ссылку на канал
-        var channelUrl = 'https://t.me/KinoBredLab';
         
-        // Пробуем открыть ссылку через WebApp (для мобильных) или в новой вкладке (для ПК)
-        var webApp = window.KinoBredUtils.getWebApp();
-        if (webApp && webApp.openTelegramLink) {
-            webApp.openTelegramLink(channelUrl);
-        } else {
-            window.open(channelUrl, '_blank');
+        var subscribeBtn = document.getElementById('subscribe-btn');
+        if (subscribeBtn) {
+            subscribeBtn.addEventListener('click', function() {
+                var channelUrl = 'https://t.me/KinoBredLab';
+                var wa = Utils.getWebApp();
+                if (wa && wa.openTelegramLink) {
+                    wa.openTelegramLink(channelUrl);
+                } else {
+                    window.open(channelUrl, '_blank');
+                }
+            });
         }
-    });
-}
     }
     
     function onStoryInput() {
-        if (!elements.storyInput || !elements.charCount || !elements.createBtn) return;
         var length = elements.storyInput.value.length;
         elements.charCount.textContent = length;
         elements.createBtn.disabled = length < 10;
@@ -126,7 +113,7 @@ if (subscribeBtn) {
     function startLoading() {
         app.isLoading = true;
         app.startTime = Date.now();
-        var texts = ['Ищем локацию...', 'Подбираем актёров...', 'Пишем сценарий...', 'Выставляем свет...', 'Монтируем...'];
+        var texts = ['Ищем локацию...', 'Подбираем актёров...', 'Пишем сценарий...', 'Монтируем...'];
         var i = 0;
         if (elements.loaderText) elements.loaderText.textContent = texts[0];
         app.loaderInterval = setInterval(function() {
@@ -197,9 +184,9 @@ if (subscribeBtn) {
         Utils.showScreen('home-screen');
     }
     
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Запуск — сразу, без ожидания DOMContentLoaded
+    cacheElements();
+    setupEventListeners();
+    loadStats();
+    Utils.showScreen('home-screen');
 })();
