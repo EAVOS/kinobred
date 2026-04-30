@@ -11,7 +11,8 @@
         currentFilm: null,
         isLoading: false,
         loaderInterval: null,
-        startTime: null
+        startTime: null,
+        _shareText: null
     };
     
     window.KinoBredApp = app;
@@ -26,15 +27,6 @@
         Utils.showScreen('home-screen');
         console.log('🎬 КиноБред v1.0 инициализирован');
     }
-
-    // Трекинг шаринга
-var trackScript = document.createElement('script');
-trackScript.src = Config.GAS_URL + '?action=share&callback=kb_share_' + Date.now();
-window['kb_share_' + Date.now()] = function() {};
-document.head.appendChild(trackScript);
-setTimeout(function() {
-    if (trackScript.parentNode) trackScript.parentNode.removeChild(trackScript);
-}, 3000);
     
     function cacheElements() {
         elements.storyInput = document.getElementById('story-input');
@@ -201,14 +193,14 @@ setTimeout(function() {
         window[callbackName] = function(data) {
             cancelLoading();
             
-            if (data.error) {
+            if (data && data.error) {
                 Utils.showError(data.error);
                 Utils.showScreen('home-screen');
                 delete window[callbackName];
                 return;
             }
             
-            if (data.success) {
+            if (data && data.success) {
                 app.currentFilm = data;
                 renderFilm(data);
                 Utils.showScreen('result-screen');
@@ -240,6 +232,7 @@ setTimeout(function() {
         
         setTimeout(function() {
             if (script.parentNode) script.parentNode.removeChild(script);
+            delete window[callbackName];
         }, 15000);
     }
     
@@ -276,42 +269,80 @@ setTimeout(function() {
             '⭐️ Слоган: ' + (film.slogan || '') + '\n\n' +
             'Сними свой фильм: https://t.me/' + Config.BOT_USERNAME;
         
-        // Способ 1: openTelegramLink
+        app._shareText = shareText;
+        
+        // Способ 1: openTelegramLink (работает на мобильных)
         if (webApp && webApp.openTelegramLink) {
             try {
                 var shareUrl = 'https://t.me/share/url?text=' + encodeURIComponent(shareText);
                 webApp.openTelegramLink(shareUrl);
+                trackShare();
                 return;
             } catch(e) {
                 console.log('openTelegramLink failed');
             }
         }
         
-        // Способ 2: window.open
+        // Способ 2: Копирование в буфер
+        copyToClipboardAndNotify(shareText);
+    }
+    
+    function copyToClipboardAndNotify(text) {
         try {
-            window.open('https://t.me/share/url?text=' + encodeURIComponent(shareText), '_blank');
-            return;
-        } catch(e) {
-            console.log('window.open failed');
-        }
-        
-        // Способ 3: копирование в буфер
-        try {
-            navigator.clipboard.writeText(shareText).then(function() {
-                if (webApp && webApp.showPopup) {
-                    webApp.showPopup({
-                        title: '📋 Скопировано!',
-                        message: 'Текст скопирован. Вставьте его в любой чат.',
-                        buttons: [{type: 'ok'}]
-                    });
-                } else {
-                    Utils.showPopup('✅ Текст скопирован!');
-                }
+            navigator.clipboard.writeText(text).then(function() {
+                showCopyNotification();
+                trackShare();
+            }).catch(function() {
+                fallbackCopy(text);
             });
         } catch(e) {
-            Utils.copyToClipboard(shareText);
+            fallbackCopy(text);
+        }
+    }
+    
+    function fallbackCopy(text) {
+        var copied = Utils.copyToClipboard(text);
+        if (copied) {
+            showCopyNotification();
+            trackShare();
+        }
+    }
+    
+    function showCopyNotification() {
+        var webApp = window.Telegram && window.Telegram.WebApp;
+        
+        if (webApp && webApp.showPopup) {
+            try {
+                webApp.showPopup({
+                    title: '📋 Текст скопирован!',
+                    message: 'Вставьте его в любой чат или канал.',
+                    buttons: [{type: 'ok'}]
+                });
+            } catch(e) {
+                Utils.showPopup('✅ Текст скопирован!');
+            }
+        } else {
             Utils.showPopup('✅ Текст скопирован!');
         }
+    }
+    
+    function trackShare() {
+        var callbackName = 'kb_share_' + Date.now();
+        window[callbackName] = function() {
+            delete window[callbackName];
+        };
+        
+        var script = document.createElement('script');
+        script.src = Config.GAS_URL + '?action=share&callback=' + callbackName;
+        script.onerror = function() {
+            delete window[callbackName];
+        };
+        document.head.appendChild(script);
+        
+        setTimeout(function() {
+            if (script.parentNode) script.parentNode.removeChild(script);
+            delete window[callbackName];
+        }, 3000);
     }
     
     function goBack() {
@@ -319,6 +350,7 @@ setTimeout(function() {
         elements.charCount.textContent = '0';
         elements.createBtn.disabled = true;
         app.currentFilm = null;
+        app._shareText = null;
         
         Utils.showScreen('home-screen');
         
