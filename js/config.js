@@ -1,5 +1,5 @@
 window.KinoBredConfig = {
-    GAS_URL: 'https://script.google.com/macros/s/AKfycbw8Ddb9nYWjaxB44va3hdmFurricUwKAvuGdcoIq38nz2uKyejXLnH4JyuqqnI0n0QdzQ/exec',
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbxMlD3aoiaYOSaEnL64-Gj4oGQrPcHr879QR6XrJChyHUDIEo3wwcXHb0CpBZUKVdXvaw/exec',
     BOT_USERNAME: 'KinoBredBot',
-    VERSION: '1.0.20'
+    VERSION: '1.0.23'
 };
