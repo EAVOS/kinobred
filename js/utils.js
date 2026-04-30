@@ -36,13 +36,19 @@ window.KinoBredUtils = (function() {
     }
     
     function showScreen(id) {
-        ['home-screen', 'result-screen', 'loader'].forEach(function(s) {
-            var el = document.getElementById(s);
-            if (el) el.classList.add('hidden');
-        });
-        var target = document.getElementById(id);
-        if (target) target.classList.remove('hidden');
+    ['home-screen', 'result-screen', 'loader'].forEach(function(s) {
+        var el = document.getElementById(s);
+        if (el) el.classList.add('hidden');
+    });
+    var target = document.getElementById(id);
+    if (target) target.classList.remove('hidden');
+    
+    // Гарантированно скрываем лоадер
+    var loaderScreen = document.getElementById('loader-screen');
+    if (loaderScreen && id !== 'loader') {
+        loaderScreen.classList.add('hidden');
     }
+}
     
     function showError(msg) {
         var el = document.getElementById('error-msg');
