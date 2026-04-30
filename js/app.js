@@ -183,13 +183,18 @@
     // Сначала очищаем всё
     cancelLoading();
     
+    // Очищаем поля
     if (elements.storyInput) elements.storyInput.value = '';
     if (elements.charCount) elements.charCount.textContent = '0';
     if (elements.createBtn) elements.createBtn.disabled = true;
     app.currentFilm = null;
     app._shareText = null;
     
-    // Очищаем текст загрузчика
+    // Принудительно скрываем лоадер
+    var loaderScreen = document.getElementById('loader-screen');
+    if (loaderScreen) loaderScreen.classList.add('hidden');
+    
+    // Очищаем текст загрузчика на всякий случай
     if (elements.loaderText) elements.loaderText.textContent = 'Ищем локацию...';
     
     // Показываем домашний экран
